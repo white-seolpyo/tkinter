@@ -8,9 +8,6 @@ class AutocompleteEntry(tk.Entry):
         self.list_text = list_text
         self.list_text_match = []
 
-        self.bind_master()
-        self.bind('<KeyRelease>', lambda x: self.on_keyrelease(x))
-
         self.var = tk.StringVar(value=value)
         self.var.trace_add('write', lambda *x: self.on_change(x))
         self.configure(textvariable=self.var)
@@ -18,6 +15,10 @@ class AutocompleteEntry(tk.Entry):
         self.top = tk.Toplevel(master)
         self.top.wm_withdraw()
         self.top.overrideredirect(True)
+
+        self.bind_master()
+        self.bind('<KeyRelease>', lambda x: self.on_keyrelease(x))
+        self.bind('<FocusOut>', lambda x: self.on_focus_out(x))
 
         listboxkwargs = {}
         for i in ('justify', 'font', 'background', 'foreground'):
@@ -31,6 +32,11 @@ class AutocompleteEntry(tk.Entry):
     def bind_master(self):
         master = self.winfo_toplevel()
         master.bind('<Configure>', lambda x: self.master_configured(x))
+        master.bind_all("<Button-1>", lambda x: self.on_focus_out(x))
+        return
+
+    def on_focus_out(self, _):
+        self.top.wm_withdraw()
         return
 
     def set_listbox(self, text: str):
